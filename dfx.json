@@ -3,6 +3,10 @@
     "chapa_backend": {
       "main": "src/chapa_backend/main.mo",
       "type": "motoko"
+    },
+    "nft": {
+      "main": "src/NFT/nft.mo",
+      "type": "motoko"
     }
   },
   "defaults": {
