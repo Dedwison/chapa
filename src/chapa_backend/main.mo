@@ -123,12 +123,22 @@ actor Chapa {
     mapOfOwners.put(owner, ownedNFTs);
   };
 
+  public query func getOwnedNFTs(user: Principal): async [Principal] {
+    // Obtiene la lista de NFTs que posee el propietario
+    var userNFTs : List.List<Principal> = switch (mapOfOwners.get(user)) {
+      case null List.nil<Principal>();
+      case (?result) result;
+    };
+
+    return List.toArray(userNFTs);
+  };
+
   // Función que se ejecuta antes de actualizar el canister
   system func preupgrade() {
     // Convierte el HashMap de saldos a un array para persistencia
     balanceEntries := Iter.toArray(balances.entries());
   };
-  
+
   // Función que se ejecuta después de actualizar el canister
   system func postupgrade() {
     // Reconstruye el HashMap de saldos desde el array persistente
