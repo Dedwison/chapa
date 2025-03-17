@@ -9,6 +9,27 @@ dfx start
 dfx deploy
 ```
 
+# Charge the Canister
+1. Check canister id:
+```
+dfx canister id chapa_backend
+```
+
+2. Save canister ID into a command line variable:
+```
+CANISTER_PUBLIC_KEY="principal \"$( \dfx canister id chapa_backend )\""
+```
+
+3. Check caniester ID has been successfully saved:
+```
+echo $CANISTER_PUBLIC_KEY
+```
+
+4. Transfer half a billion CHAPA tokens to the canister Principal ID:
+```
+dfx canister call chapa_backend transfer "($CANISTER_PUBLIC_KEY, 500_000_000)"
+```
+
 # Check your Balance
 
 1. Find out your principal id:

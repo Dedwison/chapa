@@ -26,8 +26,9 @@ actor Chapa {
     Debug.print(debug_show(msg.caller));
     let amount = 10000;
     if(balances.get(msg.caller) == null){
-      balances.put(msg.caller, amount);
-      return "Success";
+      let result = await transfer(msg.caller, amount);
+
+      return result;
     } else {
       return "Already Claimed"
     };
