@@ -20,7 +20,7 @@ actor Chapa {
   private stable var balanceEntries: [(Principal, Nat)] = [];
 
   // HashMap para almacenar los saldos de cada usuario
-  private var balances : HashMap.HashMap<Principal, Nat> = HashMap.HashMap<Principal,Nat>(1, Principal.equal, Principal.hash);
+  private var balances = HashMap.HashMap<Principal,Nat>(1, Principal.equal, Principal.hash);
   // Si el HashMap está vacío, asigna todo el suministro al propietario
   if(balances.size() < 1) {
     balances.put(owner, totalSuply);
@@ -78,11 +78,18 @@ actor Chapa {
       return "Insufficient Funds";
     };
   };
+
+  private type Listing = {
+    itemOwner: Principal;
+    itemPrice: Nat;
+  };
   
   // HashMap para almacenar los NFTs creados
-  var mapOfNFTs: HashMap.HashMap<Principal, NFTActorClass.NFT> = HashMap.HashMap<Principal, NFTActorClass.NFT>(1, Principal.equal, Principal.hash);
+  var mapOfNFTs = HashMap.HashMap<Principal, NFTActorClass.NFT>(1, Principal.equal, Principal.hash);
   // HashMap para almacenar los NFTs que posee cada usuario
-  var mapOfOwners : HashMap.HashMap<Principal, List.List<Principal>> = HashMap.HashMap<Principal, List.List<Principal>>(0, Principal.equal, Principal.hash);
+  var mapOfOwners = HashMap.HashMap<Principal, List.List<Principal>>(1, Principal.equal, Principal.hash);
+
+  var mapOfListings = HashMap.HashMap<Principal, Listing>(1, Principal.equal, Principal.hash);
 
 
   public shared(msg) func mint(imgData: [Nat8], name: Text): async Principal {
@@ -131,6 +138,32 @@ actor Chapa {
     };
 
     return List.toArray(userNFTs);
+  };
+
+  //  Permite a los usuarios listar sus NFTs para la venta
+  public shared(msg) func listItem(id: Principal, price: Nat): async Text {
+    // Intenta obtener el NFT del mapa usando el ID proporcionado
+    var item: NFTActorClass.NFT = switch (mapOfNFTs.get(id)) {
+      // Si el NFT no existe, termina la función y devuelve un mensaje de error
+      case null return "NFT does not exist";
+      case (?result) result;
+    };
+    // Obtiene el propietario actual del NFT
+    let owner = await item.getOwner();
+    // Verifica si el llamante es el propietario del NFT
+    if ( Principal.equal(owner, msg.caller)) {
+      // Crea un nuevo objeto de listado con el propietario y precio
+      let newListing : Listing = {
+        itemOwner = owner;
+        itemPrice = price
+      };
+      // Agrega el listado al mapa de listados usando el ID del NFT como clave
+      mapOfListings.put(id, newListing);
+      return "Success";
+    } else {
+      // Si el msg.caller no es el propietario, devuelve un mensaje de error
+      return "You don't own the NFT."
+    };    
   };
 
   // Función que se ejecuta antes de actualizar el canister
