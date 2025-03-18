@@ -6,6 +6,7 @@ import Iter "mo:base/Iter";
 import NFTActorClass "../NFT/nft";
 import Cycles "mo:base/ExperimentalCycles";
 import List "mo:base/List";
+import Prelude "mo:base/Prelude";
 
 
 actor Chapa {
@@ -140,6 +141,11 @@ actor Chapa {
     return List.toArray(userNFTs);
   };
 
+  public query func getListedNFTs(): async [Principal] {
+    let ids = Iter.toArray(mapOfListings.keys());
+    return ids;
+  };
+
   //  Permite a los usuarios listar sus NFTs para la venta
   public shared(msg) func listItem(id: Principal, price: Nat): async Text {
     // Intenta obtener el NFT del mapa usando el ID proporcionado
@@ -164,6 +170,61 @@ actor Chapa {
       // Si el msg.caller no es el propietario, devuelve un mensaje de error
       return "You don't own the NFT."
     };    
+  };
+
+  public query func getChapaCanisterID(): async Principal {
+    return Principal.fromActor(Chapa);
+  };
+
+  public query func isListed(id: Principal): async Bool {
+    if(mapOfListings.get(id) == null) {
+      return false;
+    } else {
+      return true;
+    };
+  };
+
+  public query func getOriginalOwner(id: Principal): async Principal {
+    var listing: Listing = switch (mapOfListings.get(id)) {
+      case null return Principal.fromText("");
+      case (?result) result;
+    };
+
+    return listing.itemOwner;
+  };
+
+  public query func getListedNFTPrice(id: Principal): async Nat {
+    var listing : Listing = switch (mapOfListings.get(id)) {
+      case null return 0;
+      case (?result) result;
+    };
+
+    return listing.itemPrice
+  };
+
+  public shared(_msg) func completePurchase(id: Principal, ownerId: Principal, newOwnerId: Principal): async Text {
+    var purchasedNFT : NFTActorClass.NFT = switch (mapOfNFTs.get(id)) {
+      case null return "NFT does not exist";
+      case (?result) result;
+    };
+
+    let transferResult = await purchasedNFT.transferOwnership(newOwnerId);
+    if(transferResult == "Success"){
+      mapOfListings.delete(id);
+      var ownedNFTs : List.List<Principal> = switch (mapOfOwners.get(ownerId)) {
+        case null List.nil<Principal>();
+        case (?result) result;
+      };
+      ownedNFTs := List.filter(ownedNFTs, func (listItemId: Principal) : Bool {
+        return listItemId != id;
+      });
+
+      addToOwnershipMap(newOwnerId, id);
+      return "Success";
+    } else {
+      return transferResult;
+    };
+
   };
 
   // Función que se ejecuta antes de actualizar el canister
