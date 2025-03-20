@@ -7,6 +7,16 @@
     "nft": {
       "main": "src/NFT/nft.mo",
       "type": "motoko"
+    },
+    "chapa_frontend": {
+      "dependencies": [
+        "chapa_backend"
+      ],
+      "source": [
+        "src/chapa_frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "chapa_frontend"
     }
   },
   "defaults": {
