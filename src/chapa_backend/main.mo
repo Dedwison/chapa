@@ -6,7 +6,7 @@ import Iter "mo:base/Iter";
 import NFTActorClass "../NFT/nft";
 import Cycles "mo:base/ExperimentalCycles";
 import List "mo:base/List";
-import Prelude "mo:base/Prelude";
+import Text "mo:base/Text";
 
 
 actor Chapa {
@@ -55,6 +55,10 @@ actor Chapa {
       // Si ya ha reclamado, devuelve un mensaje
       return "Already Claimed"
     };
+  };
+
+  public shared(msg) func whoAmI(): async Principal {
+    return msg.caller;
   };
 
   public shared(msg) func transfer(to: Principal, amount: Nat): async Text {
